@@ -10,9 +10,10 @@ router.get("/signup", (req, res) => {
   return res.render("signup");
 });
 
-router.post("/signup", (req, res) => {
+router.post("/signup", async (req, res) => {
   const { fullName, email, password } = req.body;
-  User.create({ fullName, email, password });
+  await User.create({ fullName, email, password });
   return res.redirect("/");
 });
+
 module.exports = router;
