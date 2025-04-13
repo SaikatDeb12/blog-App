@@ -1,5 +1,6 @@
-const { createHmac, randomBytes, hash } = require("crypto");
+const { createHmac, randomBytes } = require("crypto");
 const { Schema, model } = require("mongoose");
+
 const userSchema = new Schema(
   {
     fullName: {
@@ -18,24 +19,24 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    profileImage: {
+    profileImageURL: {
       type: String,
-      default: "/images/default.jpg",
+      default: "/images/default.png",
     },
     role: {
       type: String,
-      enum: ["User", "Admin"],
-      default: "User",
+      enum: ["USER", "ADMIN"],
+      default: "USER",
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 userSchema.pre("save", function (next) {
   const user = this;
+
   if (!user.isModified("password")) return;
+
   const salt = randomBytes(16).toString();
   const hashedPassword = createHmac("sha256", salt)
     .update(user.password)
@@ -43,24 +44,32 @@ userSchema.pre("save", function (next) {
 
   this.salt = salt;
   this.password = hashedPassword;
+
   next();
 });
 
-userSchema.static("matchedPassword", function (email, password) {
-  const user = this.findOne({ email });
-  if (!user) throw new Error("user not found!");
+userSchema.static(
+  "matchPasswordAndGenerateToken",
+  async function (email, password) {
+    const user = await this.findOne({ email });
+    if (!user) throw new Error("User not found!");
 
-  const salt = user.salt;
-  const hashedPassword = user.password;
-  const userProvidedHash = createHmac("sha256", salt)
-    .update(password)
-    .digest("hex");
+    const salt = user.salt;
+    const hashedPassword = user.password;
 
-  if (hashedPassword !== userProvidedHash)
-    throw new Error("Incorrect password");
+    const userProvidedHash = createHmac("sha256", salt)
+      .update(password)
+      .digest("hex");
 
-  return { ...user, password: undefined, salt: undefined };
-});
+    if (hashedPassword !== userProvidedHash)
+      throw new Error("Incorrect Password");
 
-const userModel = model("user", userSchema);
-module.exports = userModel;
+    // const token = createTokenForUser(user);
+    // return token;
+    return { ...user, password: undefined, salt: undefined };
+  }
+);
+
+const User = model("user", userSchema);
+
+module.exports = User;

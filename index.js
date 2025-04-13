@@ -21,3 +21,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/user", useRoute);
 
 app.listen(PORT, () => console.log(`server started at ${PORT}`));
+
+//abc@gmail.com
+//1234

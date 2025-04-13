@@ -12,9 +12,10 @@ router.get("/signup", (req, res) => {
 
 router.post("/signin", async (req, res) => {
   const { email, password } = req.body;
-  const user = User.matchPassword;
+  const user = await User.matchPasswordAndGenerateToken(email, password);
   console.log("user", user);
   return res.redirect("/");
+  // return res.status(200).json({ msg: "user logged in" });
 });
 
 router.post("/signup", async (req, res) => {
