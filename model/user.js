@@ -64,9 +64,8 @@ userSchema.static(
     if (hashedPassword !== userProvidedHash)
       throw new Error("Incorrect Password");
 
-    // const token = createTokenForUser(user);
-    // return token;
-    return { ...user, password: undefined, salt: undefined };
+    // return { ...user, password: undefined, salt: undefined };
+    return user;
   }
 );
 
